@@ -1,12 +1,9 @@
-# Semantic LiDAR
+# Monocular 3D with Diverse Camera Models
 
-A tool for training and finetuning of a semantic segmentation model on data of an Ouster OS2-128 (Rev 7), collected @ TH AB
-
-[![Watch the video](https://cdn.discordapp.com/attachments/709432890458374204/1219546130115727390/image.png?ex=66309bd7&is=661e26d7&hm=c48cbefebdc49abcba54b0350bd200d4fae5accf0a629c695a429e82c0eac7f9&)](https://drive.google.com/file/d/1R7l4302yjyHZzcCP7Cm9vKr7sSnPDih_/view)
 ## Development environment:
 
 ### VS-Code:
-The project is designed to be delevoped within vs-code IDE using remote container development.
+The project is designed to be developed within vs-code IDE using remote container development.
 
 ### Setup Docker Container
 In docker-compse.yaml all parameters are defined.
@@ -17,7 +14,7 @@ sudo xhost +
 # Add user to environment
 sh setup.sh
 
-# Build the image from scratch using Dockerfile, can be skipped if image already exists or is loaded from docker registry
+# Build the image from scratch using Dockerfile, can be skipped if the image already exists or is loaded from docker registry
 docker-compose build --no-cache
 
 # Start the container
@@ -26,102 +23,44 @@ docker-compose up -d
 # Stop the container
 docker compose down
 ```
-## Dataset
-### Semantic THAB
-We created our dataset using an Ouster OS2-128 (Rev 7) from sequences recorded in Aschaffenburg (Germany). 
-For data annotation, we used the [Point Labeler](https://github.com/jbehley/point_labeler) from [1]. 
-To be consistent with [SemanticKitti](http://www.semantic-kitti.org/) [1], we have used their class definitions.
 
+## Datasets
+### CARLA 9.14
+You can generate a carla dataset by using the following repo:
+https://github.com/kav-hareichert/CARLA_MV_RIG
 
-| Date | Sequences |  Status    | Size | Meta | Split
-|:----:|:---------:|:-------------:|:---------:|:------:|:------:|
-| 070324    | [[0001]](https://drive.google.com/file/d/1v6ChrQ8eaOKVz2kEZmVoTz3aY2B46eN6/view?usp=sharing)    | $${\color{green}Online}$$ |  1090  | Residential Area / Industrial Area | Train
-| 190324    | [[0001]](https://drive.google.com/file/d/1I69_bAd4E_1VeGDvnlf2HgxgVJnEhc3G/view?usp=sharing)    | $${\color{green}Online}$$ |  344   | City Ring Road                     | Train
-| 190324    | [[0002]](https://drive.google.com/file/d/1fJ2uhToOQArDZW0wQcnDWeLQViExk7Zy/view?usp=sharing)    | $${\color{green}Online}$$ |  228   | Inner City                         | Train
-| 190324    | [[0003]](https://drive.google.com/file/d/167E8YQWMhifcUOtMSgp-YpCiEAR72gJA/view?usp=sharing)    | $${\color{green}Online}$$ |  743   | Pedestrian Area                    | Train
-| 190324    | [[0004]](https://de.wikipedia.org/wiki/HTTP_404)    | $${\color{red}Offline}$$  |  400   | Inner City                         | Train
-| 190324    | [[0005]](https://de.wikipedia.org/wiki/HTTP_404)    | $${\color{red}Offline}$$  |  603   | Inner City                         | Test
-| 190324    | [[0006]](https://de.wikipedia.org/wiki/HTTP_404)    | $${\color{red}Offline}$$  |  ??   | Inner City                          | Test
-| 190324    | [[0007]](https://de.wikipedia.org/wiki/HTTP_404)    | $${\color{red}Offline}$$  |  ??   | Residential Area & Campus TH AB     | Test
-| 190324    | [[0008]](https://de.wikipedia.org/wiki/HTTP_404)    | $${\color{red}Offline}$$  |  ??   | Campus TH AB                        | Train
+Or you can use our pre-generated CARLA Panorama dataset:
 
-## Training:
-### Train Semantic Kitti
-Download the [SemanticKitti](http://www.semantic-kitti.org/) dataset [1].
-
-Extract the folders to ./dataset
-
-Ensure the following data structure:
+### Training
+You can modify the training parameter using the argparse.
 
 ```
-├── data
-│   ├── SemanticKitti
-│   │   ├── dataset
-│   │   │   ├── sequences
-│   │   │   │   ├── 00
-│   │   │   │   │   ├── velodyne
-│   │   │   │   │   │   ├── *.bin
-│   │   │   │   │   ├── label
-│   │   │   │   │   │   ├── *.label
+Supported backbone types: 'resnet18', 'resnet34', 'resnet50', 'regnet_y_400mf','regnet_y_800mf', 'regnet_y_1_6gf', 'regnet_y_3_2gf', 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'.
+Supported sensor encodings: 'CoordConv'[3], 'CAMConv'[4], 'CameraTensor'[5], 'UnitVec','Deflection'[1], 'UnitVec_Fourier'[6], and 'None'.
 ```
 
-Run the training by:
+
+For CARLA run the training by:
 ```bash
-python src/train_semantic_Kitti.py --model_type resnet34 --learning_rate 0.001 --num_epochs 50 --batch_size 1 --num_workers 1 --rotate --flip --visualization
+python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor --learning_rate 0.001 --num_epochs 1000 --batch_size 8 --num_workers 16 --visualization
 ```
 
-### Train Semantic THAB
-
-Ensure the following data structure:
-
-```
-├── data
-│   ├── SemanticTHAB
-│   │   ├── 070323 # Date
-│   │   │   ├── 0001 # SequenceID
-│   │   │   │   ├── velodyne
-│   │   │   │   │   ├── *.bin
-│   │   │   │   ├── label
-│   │   │   │   │   ├── *.label
-
-```
-
-Run the training by:
-```bash
-python src/train_semantic_THAB.py --model_type resnet34 --learning_rate 0.001 --num_epochs 50 --batch_size 8 --num_workers 16 --rotate --flip --visualization
-```
-
-### Model Zoo
-
-![image info](./Images/Inference_KITTI.png)
-
-¹ input resolution of 128x2048, no postprocessing, no augmentation
-
-² input resolution of 64x2048
-
-³ input resolution of 64x512, no postprocessing, no augmentation
-
-You can download pre-trained models from our model zoo:
-
-| Dataset | Backbone | Parameters | Inference Time¹ | mIoU² | Status 
-|:-------:|:--------:|:----------:|:---------------:|:----:|:------:|
-|SemanticKitti| [[THAB_RN18]](https://drive.google.com/drive/folders/1blLMyAXlmSCHIvQhBRWdbkCvDqQtW4AR?usp=sharing) |  18 M      |  10ms  | 51.72%  | $${\color{green}Online}$$ 
-|SemanticKitti| [[THAB_RN34]](https://drive.google.com/drive/folders/1mDyPiZBHOi1mDpw-tvoqWRuKqjcod6N4?usp=sharing) |  28 M      |  14ms  | 57%  | $${\color{green}Online}$$ 
-|SemanticTHAB³| [[THAB_RN18]](https://de.wikipedia.org/wiki/HTTP_404) |  18 M      |  10ms  | --  | $${\color{red}Offline}$$
-|SemanticTHAB³| [[THAB_RN34]](https://drive.google.com/drive/folders/1tmyw1RNRtcm3tHld2owxVHm1-2Fvrnzn?usp=sharing) |  28 M      |  14ms  | 72%  | $${\color{green}Online}$$ 
 
 
-¹ Inference time measured at a Nivida Geforce RTX 2070 TI.
-
-² Model input size is 128x2048, mIoU is measured over the Eval set.
-
-³ Models pre-trained on SemanticKitti
-
-## Inference:
-You can explore /src/inference_ouster.py for an example how to use our method with a data stream from an Ouster OS2-128 sensor.
-We provide a sample sensor recording.
 
 ### References
-[1]   J. Behley et al., "SemanticKITTI: A Dataset for Semantic Scene Understanding of LiDAR Sequences," 2019 IEEE/CVF International Conference on Computer Vision (ICCV), Seoul, Korea (South), 2019, pp. 9296-9306, doi: 10.1109/ICCV.2019.00939.
+[1] Reichert, Hannes and Hetzel, Manuel and Hubert, Andreas and Doll, Konrad and Sick, Bernhard,
+    "Sensor Equivariance: A Framework for Semantic Segmentation with Diverse Camera Models.", in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition     (CVPR) Workshops, June 2024, pages 1254-1261.
+
+[2] Semih, Orhan and Semih, Bastanlar, "Semantic segmentation of outdoor panoramic images.", in Springer SIViP 16, April 2022, pages 643–650. https://doi.org/10.1007/s11760-021-02003-3
+
+[3] Liu, Rosanne and Lehman, Joel and Molino, Piero and Petroski Such, Felipe and Frank, Eric and Sergeev, Alex, and Yosinski, Jason, "An intriguing failing of convolutional neural networks and the CoordConv solution.", in Proceedings of the 32nd International Conference on Neural Information Processing Systems (NIPS'18). 2019, pages 9628–9639.
+
+[4] Facil, Jose M. and Ummenhofer, Benjamin and Zhou, Huizhong and Montesano, Luis and Brox, Thomas and Civera, Javier "CAM-Convs: Camera-Aware Multi-Scale Convolutions for Single-View Depth.", in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops, June 2019.
+
+[5] Ravi Kumar, Varun et al. “OmniDet: Surround View Cameras Based Multi-Task Visual Perception Network for Autonomous Driving.” in IEEE Robotics and Automation Letters 6 (2021): pages 2830-2837.
+
+[6] Wang, Yifan et al. “Input-level Inductive Biases for 3D Reconstruction.” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): 6166-6176.
+
 
 
