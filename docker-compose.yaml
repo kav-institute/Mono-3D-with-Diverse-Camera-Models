@@ -1,0 +1,23 @@
+version: '3.3'
+services:
+  monodepththab:
+    shm_size: 24G
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+      args:
+        - USER_ID=$USER_ID
+        - USER_NAME=$USER_NAME
+    image: monodepththab:0.1
+    container_name: Monocular_Depth_THAB
+    environment:
+      - DISPLAY=${DISPLAY}
+    volumes:
+      - ./dataset:/home/${USER_NAME}/data
+      - /mnt/data1:/home/${USER_NAME}/mnt # addition for mount
+      - ./src:/home/${USER_NAME}/repos
+      - /tmp/.X11-unix:/tmp/.X11-unix
+    entrypoint: ["tail", "-f", "/dev/null"]
+    privileged: true
+    runtime: nvidia
+
