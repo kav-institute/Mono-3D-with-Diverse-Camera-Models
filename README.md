@@ -60,7 +60,7 @@ python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor -
 
 [5] Ravi Kumar, Varun et al. “OmniDet: Surround View Cameras Based Multi-Task Visual Perception Network for Autonomous Driving.” in IEEE Robotics and Automation Letters 6 (2021): pages 2830-2837.
 
-[6] Wang, Yifan et al. “Input-level Inductive Biases for 3D Reconstruction.” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): 6166-6176.
+[6] Wang, Yifan et al. “Input-level Inductive Biases for 3D Reconstruction.” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): pages 6166-6176.
 
 
 
