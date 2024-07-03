@@ -1,4 +1,5 @@
 # Monocular 3D with Diverse Camera Models
+This code is for non-commercial use; please see the [license file](LICENSE) for terms.
 
 ## Development environment:
 
@@ -79,6 +80,10 @@ For CARLA run the training by:
 ```bash
 python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor --learning_rate 0.001 --num_epochs 1000 --batch_size 8 --num_workers 16 --visualization
 ```
+## License
+Copyright © Technische Hochschule Aschaffenburg / University of Applied Sciences Aschaffenburg 2024. Patent Pending.
+All rights reserved.
+Please see the [license file](LICENSE) for terms.
 
 ## References
 [1] Reichert, Hannes and Hetzel, Manuel and Hubert, Andreas and Doll, Konrad and Sick, Bernhard,
