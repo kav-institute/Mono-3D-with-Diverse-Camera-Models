@@ -23,6 +23,9 @@ docker-compose up -d
 # Stop the container
 docker compose down
 ```
+## Motivation
+
+## Approach
 
 ## Datasets
 ### CARLA 9.14
@@ -31,8 +34,13 @@ https://github.com/kav-hareichert/CARLA_MV_RIG
 
 Or you can use our pre-generated [CARLA Panorama](https://drive.google.com/drive/folders/1WFCy2XeJugk82qbQTRmHuzYb6c8x4TqY?usp=sharing) dataset.
 
+### Matterport 360
+TBD
 
-### Training
+### TH AB 360
+TBD
+
+## Training
 You can modify the training parameter using the argparse.
 
 ```
@@ -46,10 +54,7 @@ For CARLA run the training by:
 python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor --learning_rate 0.001 --num_epochs 1000 --batch_size 8 --num_workers 16 --visualization
 ```
 
-
-
-
-### References
+## References
 [1] Reichert, Hannes and Hetzel, Manuel and Hubert, Andreas and Doll, Konrad and Sick, Bernhard,
     "Sensor Equivariance: A Framework for Semantic Segmentation with Diverse Camera Models.", in Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition     (CVPR) Workshops, June 2024, pages 1254-1261.
 
