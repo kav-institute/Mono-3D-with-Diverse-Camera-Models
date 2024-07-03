@@ -1,29 +1,6 @@
 # Monocular 3D with Diverse Camera Models
 This code is for non-commercial use; please see the [license file](LICENSE) for terms.
 
-## Development environment:
-
-### VS-Code:
-The project is designed to be developed within vs-code IDE using remote container development.
-
-### Setup Docker Container
-In docker-compse.yaml all parameters are defined.
-```bash
-# Enable xhost in the terminal
-sudo xhost +
-
-# Add user to environment
-sh setup.sh
-
-# Build the image from scratch using Dockerfile, can be skipped if the image already exists or is loaded from docker registry
-docker-compose build --no-cache
-
-# Start the container
-docker-compose up -d
-
-# Stop the container
-docker compose down
-```
 ## Introduction
 Mono 3D from a single image is challenging due to ambiguities in scale. Camera intrinsic parameters are critically important for the
 metric estimation from a single image, as otherwise, the
@@ -66,6 +43,30 @@ TBD
 
 ### TH AB 360
 TBD
+
+## Development environment:
+
+### VS-Code:
+The project is designed to be developed within vs-code IDE using remote container development.
+
+### Setup Docker Container
+In docker-compse.yaml all parameters are defined.
+```bash
+# Enable xhost in the terminal
+sudo xhost +
+
+# Add user to environment
+sh setup.sh
+
+# Build the image from scratch using Dockerfile, can be skipped if the image already exists or is loaded from docker registry
+docker-compose build --no-cache
+
+# Start the container
+docker-compose up -d
+
+# Stop the container
+docker compose down
+```
 
 ## Training
 You can modify the training parameter using the argparse.
