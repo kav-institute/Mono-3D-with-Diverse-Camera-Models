@@ -29,7 +29,8 @@ docker compose down
 You can generate a carla dataset by using the following repo:
 https://github.com/kav-hareichert/CARLA_MV_RIG
 
-Or you can use our pre-generated CARLA Panorama dataset:
+Or you can use our pre-generated [CARLA Panorama](https://drive.google.com/drive/folders/1WFCy2XeJugk82qbQTRmHuzYb6c8x4TqY?usp=sharing) dataset.
+
 
 ### Training
 You can modify the training parameter using the argparse.
