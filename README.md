@@ -23,9 +23,35 @@ docker-compose up -d
 # Stop the container
 docker compose down
 ```
-## Motivation
+## Introduction
+Mono 3D from a single image is challenging due to ambiguities in scale. Camera intrinsic parameters are critically important for the
+metric estimation from a single image, as otherwise, the
+problem is ill-posed. In this work we aim to compare various approaches for camera intrinsic encodings.
+
+<img src="/Images/IntrinsicVForward.png" width="400">
 
 ## Approach
+The training data of many previous approaches contains limited images and types of cameras,
+which challenges data diversity and network capacity. 
+We propose a data augmentation pipeline from high-resolution equirectangular panoramas to generate diverse types of cameras during and mounting angles training and testing.
+We use the [OmniCV-Lib](https://github.com/kaustubh-sadekar/OmniCV-Lib) (with some modifications) for our augmentation.
+
+<img src="/Images/augmentation.png" width="400">
+
+You can control the range of parameters tuning the configs in the train_mono3D_*.py script.
+Just pass lists over the parameter range you are interested in.
+We use the FOV camera model to define diverse camera intrinsics with only a handful of parameters.
+
+```python
+config["FOV"] = list(range(20,70,1)) # linear FOV
+config["H"] = [256, 512, 1024] # image hight 
+config["PITCH"] = list(range(0,360,1)) # sensor pitch
+config["ROLL"] = [0] # sensor roll
+config["YAW"] =[0] # sensor yaw
+config["DISTORTION"] = np.linspace(0.01, 1.0, 100).tolist() # non linear distortion
+config["ASPECT"] = [1.0] # aspect ratio
+config["FLIP"] = [True, False] # horizontal flip
+```
 
 ## Datasets
 ### CARLA 9.14
