@@ -39,7 +39,7 @@ https://github.com/kav-hareichert/CARLA_MV_RIG
 Or you can use our pre-generated [CARLA Panorama](https://drive.google.com/drive/folders/1WFCy2XeJugk82qbQTRmHuzYb6c8x4TqY?usp=sharing) dataset.
 
 ### Matterport 360
-TBD
+You can download the [Matterport 360](https://researchdata.bath.ac.uk/1126/) [6] dataset.
 
 ### TH AB 360
 TBD
@@ -97,6 +97,8 @@ Please see the [license file](LICENSE) for terms.
 [4] Ravi Kumar, Varun et al. “OmniDet: Surround View Cameras Based Multi-Task Visual Perception Network for Autonomous Driving.” in IEEE Robotics and Automation Letters 6 (2021): pages 2830-2837.
 
 [5] Wang, Yifan et al. “Input-level Inductive Biases for 3D Reconstruction.” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): pages 6166-6176.
+
+[6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): pages 3752-3762.
 
 
 
