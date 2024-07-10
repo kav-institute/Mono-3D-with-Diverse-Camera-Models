@@ -98,7 +98,7 @@ Please see the [license file](LICENSE) for terms.
 
 [5] Wang, Yifan et al. “Input-level Inductive Biases for 3D Reconstruction.” IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): pages 6166-6176.
 
-[6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2021): pages 3752-3762.
+[6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2022): pages 3752-3762.
 
 
 
