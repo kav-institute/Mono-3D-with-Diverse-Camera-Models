@@ -73,7 +73,7 @@ You can modify the training parameter using the argparse.
 
 ```
 Supported backbone types: 'resnet18', 'resnet34', 'resnet50', 'regnet_y_400mf','regnet_y_800mf', 'regnet_y_1_6gf', 'regnet_y_3_2gf', 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'.
-Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'UnitVec','Deflection'[1], 'UnitVec_Fourier'[5], and 'None'.
+Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'UnitVec','Deflection'[1], 'SHE'[5,7], and 'None'.
 ```
 
 
@@ -100,5 +100,6 @@ Please see the [license file](LICENSE) for terms.
 
 [6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2022): pages 3752-3762.
 
+[7] Piccinelli, Luigi et al.  “UniDepth: Universal Monocular Metric Depth Estimation“ 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2024): pages 10106-10116.
 
 
