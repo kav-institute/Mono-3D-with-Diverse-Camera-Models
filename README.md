@@ -31,6 +31,9 @@ config["ASPECT"] = [1.0] # aspect ratio
 config["FLIP"] = [True, False] # horizontal flip
 ```
 
+> [!NOTE]
+> We only support batch size of one for heterogenous image hights and aspect ratios
+
 ## Datasets
 ### CARLA 9.14
 You can generate a carla dataset by using the following repo:
@@ -67,6 +70,9 @@ docker-compose up -d
 # Stop the container
 docker compose down
 ```
+> [!CAUTION]
+> xhost + is not a safe operation!
+
 
 ## Training
 You can modify the training parameter using the argparse.
