@@ -106,6 +106,6 @@ Please see the [license file](LICENSE) for terms.
 
 [6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2022): pages 3752-3762.
 
-[7] Piccinelli, Luigi et al.  “UniDepth: Universal Monocular Metric Depth Estimation“ 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2024): pages 10106-10116.
+[7] Piccinelli, Luigi et al.  “UniDepth: Universal Monocular Metric Depth Estimation“ 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2024): pages 10106-10116.
 
 
