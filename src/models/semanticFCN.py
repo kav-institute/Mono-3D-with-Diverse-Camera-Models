@@ -52,7 +52,7 @@ class RangeNetWithFPN(nn.Module):#
         attention (bool): Option to use a attention mechanism in the FPN (see: https://arxiv.org/pdf/1706.03762.pdf)
         
     """
-    def __init__(self, backbone='resnet18', meta_channel_dim=3, interpolation_mode = 'nearest', num_classes = 2, attention=True, pretrained=False):
+    def __init__(self, backbone='resnet18', meta_channel_dim=3, interpolation_mode = 'nearest', num_classes = 2, attention=False, pretrained=False):
         super(RangeNetWithFPN, self).__init__()
 
         self.backbone_name = backbone
