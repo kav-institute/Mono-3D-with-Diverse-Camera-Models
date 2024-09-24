@@ -4,7 +4,8 @@ import torch
 from torch.utils.data import DataLoader
 from dataset.dataloader_CARLA import CarlaEquirectangular
 from models.semanticFCN import RangeNetWithFPN
-from models.losses import loss_3D_gaussian, metric_3D_loss, metric_3D_loss_RMSE, cosine_similarity_loss, torch_build_normal_xyz, gradient_loss
+from models.losses import metric_3D_loss, metric_3D_loss_RMSE, HDSNLoss, PairWiseNormalLoss, NormalLoss, SilogLoss, SkyLoss, torch_build_normal_xyz, HistogramLoss, CDFNornLoss
+import torch.optim as optim
 import torch.optim as optim
 import tqdm
 import time
@@ -123,23 +124,20 @@ def main(args):
             torch.cuda.synchronize()
             
 
+            normal_img = torch_build_normal_xyz(xyz_img)*M
+            normal_gt = torch_build_normal_xyz(xyz_img_gt)*M
 
-            # get losses
-            M = (range_img > 0).to(torch.float32)
-            
-            xyz_img = unit_vec*mu#unit_vec*mu
-            xyz_img_gt = unit_vec*range_img
-            outputs_range = (torch.linalg.norm(xyz_img, axis=1, keepdims=True))
+            loss_PWN = criterionPWN(xyz_img_gt, xyz_img, M)
+            loss_normal = criterionNormal(xyz_img_gt, xyz_img, M)
+            loss_SiLog = criterionSiLog(outputs_range, range_img, M)
+            loss_HDN = criterionHDNL(outputs_range, range_img, M)
 
-            loss_RMSE = metric_3D_loss_RMSE(range_img, outputs_range, M)
-            loss_pc = metric_3D_loss_RMSE(xyz_img_gt, xyz_img, M)
-
-            normal_img = torch_build_normal_xyz(xyz_img)
-            normal_gt = torch_build_normal_xyz(xyz_img_gt)
-            loss_normals = cosine_similarity_loss(normal_gt, normal_img, M)
             #loss_SSIL = gradient_loss(mu,range_img, M)
-            loss = loss_pc+loss_normals+loss_RMSE
-            
+            #loss = loss_pc+loss_normals+loss_RMSE
+            #loss = loss_3D + loss_CDF #+ loss_normal #loss_3D + loss_HDN + loss_PWN + loss_normal + loss_SiLog #+ loss_hist
+            #loss = loss_3D +loss_normal + loss_hist
+            loss = loss_HDN + loss_normal + loss_PWN + loss_SiLog
+
 
             xyz_img = xyz_img*M
             normal_img = normal_img*M
