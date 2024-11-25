@@ -14,7 +14,7 @@ which challenges data diversity and network capacity.
 We propose a data augmentation pipeline from high-resolution equirectangular panoramas to generate diverse types of cameras during and mounting angles training and testing.
 We use the [OmniCV-Lib](https://github.com/kaustubh-sadekar/OmniCV-Lib) (with some modifications) for our augmentation.
 
-<img src="/Images/augmentation.png" width="400">
+<img src="/Images/augmentation_ladybug.png" width="400">
 
 You can control the range of parameters tuning the configs in the train_mono3D_*.py script.
 Just pass lists over the parameter range you are interested in.
