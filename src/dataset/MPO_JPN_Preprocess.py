@@ -193,8 +193,8 @@ for scan_path in ptx_files:
     # cv2.imshow("normals", ((normals+1)/2)[::4,::4,:])
     # cv2.imshow("img_rgb", img_rgb_[::4,::4,:])
     cv2.imwrite(os.path.join(save_path, "rgb", base).replace(".ptx", ".png"), img_rgb_)
-    #cv2.imwrite(os.path.join(save_path, "reflectivity", base).replace(".ptx", ".png"), ref_img_)
-    cv2.imwrite(os.path.join(save_path, "intensity", base).replace(".ptx", ".png"), np.uint8(xyz_img[...,4:5]))
+    cv2.imwrite(os.path.join(save_path, "reflectivity", base).replace(".ptx", ".png"), ref_img_)
+    #cv2.imwrite(os.path.join(save_path, "intensity", base).replace(".ptx", ".png"), np.uint8(xyz_img[...,4:5]))
     cv2.imwrite(os.path.join(save_path, "range", base).replace(".ptx", ".png"), img_range_scaled)
     #cv2.imwrite(os.path.join(save_path, "NearIR", base).replace(".ptx", ".png"), nearIR)
 
