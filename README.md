@@ -36,16 +36,24 @@ config["FLIP"] = [True, False] # horizontal flip
 
 ## Datasets
 ### CARLA 9.14
+The CARLA dataset is a synthetic dataset containing equirectangular images, segmentation masks (semantic & instance), and range measures from simulated traffic scenes.
 You can generate a carla dataset by using the following repo:
 https://github.com/kav-hareichert/CARLA_MV_RIG
 
 Or you can use our pre-generated [CARLA Panorama](https://drive.google.com/drive/folders/1WFCy2XeJugk82qbQTRmHuzYb6c8x4TqY?usp=sharing) dataset.
 
 ### Matterport 360
+The Matterport Dataset provieds equirectangular images with range measured captured in indoor scenes by a Matterport 3D sensor.
 You can download the [Matterport 360](https://researchdata.bath.ac.uk/1126/) [6] dataset.
+
+## Fukuhoka Dataset for Place Categorization
+The Fukuhoka Dataset is a high fidelity dataset for place categorization. It containes various static scenes from traffic related environemnts captured by a FARO 3D scanner and a equirectangular camera.
+You can download the [Fukuhoka Dataset](http://robotics.ait.kyushu-u.ac.jp/kyushu_datasets/outdoor_dense.html) [8].
 
 ### TH AB 360
 TBD
+
+
 
 ## Development environment:
 
@@ -107,5 +115,7 @@ Please see the [license file](LICENSE) for terms.
 [6] Rey-Area, Manuel and Mingze, Yuan and Christian, Richardt. “360MonoDepth: High-Resolution 360° Monocular Depth Estimation.” 2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2022): pages 3752-3762.
 
 [7] Piccinelli, Luigi et al.  “UniDepth: Universal Monocular Metric Depth Estimation“ 2024 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) (2024): pages 10106-10116.
+
+[8] Martinez Mozos O, Nakashima K, Jung H, Iwashita Y, Kurazume R. "Fukuoka datasets for place categorization" 2019 The International Journal of Robotics Research. pages 38(5):507-517. doi:10.1177/0278364919835603
 
 
