@@ -167,7 +167,7 @@ def main():
     config["MAX_RANGE"] = 50.0
     config["MIN_RANGE"] = 0.25
     config["SENSOR_ENCODING"] = "CameraTensor"
-    depth_dataset_train = CarlaEquirectangular(data_path_train, config)
+    depth_dataset_train = JPNEquirectangular(data_path_train, config)
     dataloader_train = DataLoader(depth_dataset_train, batch_size=1, shuffle=True)#, num_workers=1)
 
     for batch_idx, (color_img, range_img, unit_vec, normals, encoding) in enumerate(dataloader_train):
