@@ -156,16 +156,16 @@ class CarlaEquirectangular(Dataset):
 def main():
     data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/JPN_Dataset/refined/rgb/*.png")]
     config = {}
-    config["FOV"] = list(range(20,70,1))
+    config["FOV"] = [60] #list(range(20,70,1))
     config["H"] = [512]#[int(128*i) for i in [2.0, 2.5,3.0, 3.5, 4.0]]
-    config["PITCH"] = [0]#list(range(0,360,1))
-    config["ROLL"] = [0]#list(range(-15,15,1))
-    config["YAW"] =[0]
-    config["DISTORTION"] = np.linspace(0.01, 1.0, 100).tolist() #[0.01, 0.5, 1.0, 1.5]
+    config["PITCH"] = list(range(0,360,1))
+    config["ROLL"] = [-90] #list(range(-90,90,1))# [0] #list(range(-15,15,1))
+    config["YAW"] = [0] #list(range(-90,90,1))
+    config["DISTORTION"] = [1.0] #np.linspace(0.01, 1.0, 100).tolist() #[0.01, 0.5, 1.0, 1.5]
     config["ASPECT"] = [1.0]#[1.0, 1.5, 2.0]
     config["FLIP"] = [True, False]
     config["MAX_RANGE"] = 50.0
-    config["MIN_RANGE"] = 2.5
+    config["MIN_RANGE"] = 0.25
     config["SENSOR_ENCODING"] = "CameraTensor"
     depth_dataset_train = CarlaEquirectangular(data_path_train, config)
     dataloader_train = DataLoader(depth_dataset_train, batch_size=1, shuffle=True)#, num_workers=1)
