@@ -23,7 +23,7 @@ def sample_from_cfg(param_list):
     param = np.random.choice(param_list)
     return param
 
-class CarlaEquirectangular(Dataset):
+class JPNEquirectangular(Dataset):
     def __init__(self, data_path, config):
         self.data_path = data_path
         self.config = config
