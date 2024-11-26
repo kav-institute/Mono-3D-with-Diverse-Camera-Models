@@ -121,15 +121,36 @@ hit = rc['t_hit'].isfinite()
 points = rays[hit][:,:3] + rays[hit][:,3:]*rc['t_hit'][hit].reshape((-1,1))
 ground_prior_img = np.nan_to_num(rc['t_hit'].numpy(),nan=0.0,posinf=0.0,neginf=0.0)
 
+def rmat(roll,
+         pitch,
+         yaw):
 
-def rmat(alpha,
-         beta,
-         gamma):
 
+    #R = cv.Rodrigues(np.deg2rad([alpha, beta, gamma]))[0]
+    roll = np.deg2rad(roll)
+    pitch = np.deg2rad(pitch)
+    yaw = np.deg2rad(yaw)
+    yawMatrix = np.array([
+    [np.cos(yaw), -np.sin(yaw), 0],
+    [np.sin(yaw), np.cos(yaw), 0],
+    [0, 0, 1]
+    ])
 
-    R = cv.Rodrigues(np.deg2rad([alpha, beta, gamma]))[0]
+    pitchMatrix = np.array([
+    [np.cos(pitch), 0, np.sin(pitch)],
+    [0, 1, 0],
+    [-np.sin(pitch), 0, np.cos(pitch)]
+    ])
 
+    rollMatrix = np.array([
+    [1, 0, 0],
+    [0, np.cos(roll), -np.sin(roll)],
+    [0, np.sin(roll), np.cos(roll)]
+    ])
+
+    R = yawMatrix@pitchMatrix@rollMatrix
     return R
+
 
 def RPY_to_Axis(roll,pitch,yaw):
     roll = np.deg2rad(roll)
