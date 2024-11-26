@@ -99,94 +99,76 @@ def load_ptx(file_path):
 
         return data
 
-def build_normal_xyz(xyz, norm_factor=2, ksize=3):
-    '''
-    @param xyz: ndarray with shape (h,w,3) containing a stagged point cloud
-    @param norm_factor: int for the smoothing in Schaar filter
-    '''
-    x = xyz[...,0]
-    y = xyz[...,1]
-    z = xyz[...,2]
-
-    Sxx = cv2.Scharr(x.astype(np.float32), cv2.CV_32FC1, 1, 0, scale=1.0/norm_factor)    
-    Sxy = cv2.Scharr(x.astype(np.float32), cv2.CV_32FC1, 0, 1, scale=1.0/norm_factor)
-
-    Syx = cv2.Scharr(y.astype(np.float32), cv2.CV_32FC1, 1, 0, scale=1.0/norm_factor)    
-    Syy = cv2.Scharr(y.astype(np.float32), cv2.CV_32FC1, 0, 1, scale=1.0/norm_factor)
-
-    Szx = cv2.Scharr(z.astype(np.float32), cv2.CV_32FC1, 1, 0, scale=1.0/norm_factor)    
-    Szy = cv2.Scharr(z.astype(np.float32), cv2.CV_32FC1, 0, 1, scale=1.0/norm_factor)
-
-
-    #build cross product
-    normal = -np.dstack((Syx*Szy - Szx*Syy,
-                        Szx*Sxy - Szy*Sxx,
-                        Sxx*Syy - Syx*Sxy))
-
-    # normalize corss product
-    n = np.linalg.norm(normal, axis=2)
-
-
-    normal[:, :, 0] /= n
-    normal[:, :, 1] /= n
-    normal[:, :, 2] /= n
-    
-
-    return normal
 
 # Usage
 import glob, os
-ptx_files = glob.glob("/home/appuser/data/JPN_Dataset/ParkingIn/*.*.ptx")
+ptx_files = []
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/Coast/*.*.ptx"))
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/ParkingIn/*.*.ptx"))
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/ParkingOut/*.*.ptx"))
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/Forest/*.*.ptx"))
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/Residential/*.*.ptx"))
+ptx_files += list(glob.glob("/home/appuser/data/JPN_Dataset/Urban/*.*.ptx"))
 save_path = "/home/appuser/data/JPN_Dataset/refined/"
 #os.makedirs(os.path.join(save_path, "intensity"), exist_ok=True)
 os.makedirs(os.path.join(save_path, "rgb"), exist_ok=True)
 os.makedirs(os.path.join(save_path, "range"), exist_ok=True)
 os.makedirs(os.path.join(save_path, "reflectivity"), exist_ok=True)
+#os.makedirs(os.path.join(save_path, "ssim_map"), exist_ok=True)
 #os.makedirs(os.path.join(save_path, "NearIR"), exist_ok=True)
 #os.makedirs(os.path.join(save_path, "pcd"), exist_ok=True)
 for scan_path in ptx_files:
-    file_path = scan_path
+    try:
+        file_path = scan_path
 
-    base= os.path.basename(file_path)
+        base= os.path.basename(file_path)
 
-    save_file = os.path.join(save_path, base)
-    points_array = load_ptx(file_path)
+        save_file = os.path.join(save_path, base)
+        points_array = load_ptx(file_path)
 
-    img_rgb = cv2.imread(scan_path.replace(".ptx",".RGB.png"))
-    ref_img = cv2.imread(scan_path.replace(".ptx",".Ref.png"), cv2.IMREAD_UNCHANGED)
+        img_rgb = cv2.imread(scan_path.replace(".ptx",".RGB.png"))
+        ref_img = cv2.imread(scan_path.replace(".ptx",".Ref.png"), cv2.IMREAD_UNCHANGED)
+        
+        
 
+        h, w, c = img_rgb.shape
+        h_ = w//2
 
-    h, w, c = img_rgb.shape
-    h_ = w//2
+        # Create black rows with the same width and channels as the image
+        black_rows = np.zeros((h_ - h, w, 3), dtype=np.uint8)
 
-    # Create black rows with the same width and channels as the image
-    black_rows = np.zeros((h_ - h, w, 3), dtype=np.uint8)
+        # Add the black rows to the bottom of the image
+        img_rgb = np.vstack((img_rgb, black_rows))
+        ref_img = np.vstack((ref_img, black_rows[...,0]))
 
-    # Add the black rows to the bottom of the image
-    img_rgb = np.vstack((img_rgb, black_rows))
-    ref_img = np.vstack((ref_img, black_rows[...,0]))
+        w_ = 2*2048#int(w-0.05*w)
+        xyz_img, _, _ = spherical_projection(points_array,height=w_//2, width=w_, theta_range=[-np.pi/2,np.pi/2])
+        xyz_img = xyz_img
+        #normals = build_normal_xyz(xyz_img)
+        h, w, c = xyz_img.shape
+        img_rgb_ = cv2.resize(img_rgb, (w, h))
+        ref_img_ = cv2.resize(ref_img, (w, h))
 
-    w_ = 2*2048#int(w-0.05*w)
-    xyz_img, _, _ = spherical_projection(points_array,height=w_//2, width=w_, theta_range=[-np.pi/2,np.pi/2])
-    xyz_img = xyz_img
-    #normals = build_normal_xyz(xyz_img)
-    h, w, c = xyz_img.shape
-    img_rgb_ = cv2.resize(img_rgb, (w, h))
-    ref_img_ = cv2.resize(ref_img, (w, h))
+        img_range = np.linalg.norm(xyz_img[...,0:3],axis=-1)
 
-    img_range = np.linalg.norm(xyz_img[...,0:3],axis=-1)
+        # Define the maximum depth range
+        max_depth = 150.0  # Maximum depth in meters
 
-    # Define the maximum depth range
-    max_depth = 150.0  # Maximum depth in meters
+        # Scale the depth image to the range 0-65535
+        img_range_scaled = (img_range / max_depth * 65535).clip(0, 65535).astype(np.uint16)
+        
+        # invert scale
+        img_range_original = (img_range_scaled / 65535) * max_depth
 
-    # Scale the depth image to the range 0-65535
-    img_range_scaled = (img_range / max_depth * 65535).clip(0, 65535).astype(np.uint16)
-    
-    # invert scale
-    img_range_original = (img_range_scaled / 65535) * max_depth
+        # build NearIR
+        nearIR = ref_img_-np.uint8(xyz_img[...,4]) 
+    except:
+        continue
 
-    # build NearIR
-    nearIR = ref_img_-np.uint8(xyz_img[...,4]) 
+    # build SSIM 
+    #img_gray = cv2.cvtColor(img_rgb_, cv2.COLOR_BGR2GRAY)
+    #ssim_map = compute_ssim_per_pixel(img_gray, np.uint8(xyz_img[...,4]))
+    #ssim_map = np.uint8(255*(ssim_map+1)/2)
 
     # cv2.imshow("range_img", cv2.applyColorMap(np.uint8(255*np.minimum(img_range[::4,::4],50)/50), cv2.COLORMAP_MAGMA))
     # cv2.imshow("intensity", np.uint8(xyz_img[...,4:5][::4,::4,:]))
@@ -196,6 +178,7 @@ for scan_path in ptx_files:
     cv2.imwrite(os.path.join(save_path, "reflectivity", base).replace(".ptx", ".png"), ref_img_)
     #cv2.imwrite(os.path.join(save_path, "intensity", base).replace(".ptx", ".png"), np.uint8(xyz_img[...,4:5]))
     cv2.imwrite(os.path.join(save_path, "range", base).replace(".ptx", ".png"), img_range_scaled)
+    #cv2.imwrite(os.path.join(save_path, "ssim_map", base).replace(".ptx", ".png"), ssim_map)
     #cv2.imwrite(os.path.join(save_path, "NearIR", base).replace(".ptx", ".png"), nearIR)
 
     #cv2.waitKey(1)
