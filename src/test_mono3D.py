@@ -26,9 +26,9 @@ def main(args):
     model = RangeNetWithFPN(backbone=config["BACKBONE"], meta_channel_dim=meta_channel_dict[config["SENSOR_ENCODING"]], attention=config["USE_ATTENTION"], interpolation_mode=config["INTERPOLATION"])
     # run final test
     tester = Tester(model, save_path=config["SAVE_PATH"], config=config, load=True)
-    data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/val/rgb/*.png")][0:1]
-    #tester(CarlaEquirectangular, data_path_test, test_list_FOV = list(reversed(np.linspace(25,60,8).tolist())), test_list_DISTORTION = list(np.linspace(0.01, 1.5, 8).tolist()))
-    tester.create_inference_plot(CarlaEquirectangular, data_path_test, test_list_FOV = list(reversed(np.linspace(25,60,4).tolist())), test_list_DISTORTION = list(np.linspace(0.01, 1.5, 4).tolist()))
+    data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/val/rgb/*.png")]
+    tester(CarlaEquirectangular, data_path_test, test_list_FOV = list(reversed(np.linspace(25,60,8).tolist())), test_list_DISTORTION = list(np.linspace(0.01, 1.5, 8).tolist()))
+    #tester.create_inference_plot(CarlaEquirectangular, data_path_test, test_list_FOV = list(reversed(np.linspace(25,60,4).tolist())), test_list_DISTORTION = list(np.linspace(0.01, 1.5, 4).tolist()))
 
 
     
