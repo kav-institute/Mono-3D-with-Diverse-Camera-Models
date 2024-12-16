@@ -40,8 +40,8 @@ class DepthEvaluator:
         
         # Proportion of ratios below thresholds 1.25, 1.25^2, and 1.25^3
         a1 = ((mask*(thresh < 1.25).float()).sum()/divisor).item()
-        a2 = ((mask*(thresh < 1.25).float()).sum()/divisor).item()
-        a3 = ((mask*(thresh < 1.25).float()).sum()/divisor).item()
+        a2 = ((mask*(thresh < 1.25**2).float()).sum()/divisor).item()
+        a3 = ((mask*(thresh < 1.25**3).float()).sum()/divisor).item()
 
         # Root Mean Squared Error
         rmse = torch.sqrt((mask*(gt - pred) ** 2).sum()/divisor).item()

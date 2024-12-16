@@ -76,12 +76,83 @@ class TverskyLoss(nn.Module):
         
         return 1 - Tversky
 
+class DepthEstimationLoss(nn.Module):
+    def __init__(self, alpha=0.85, beta=0.15, max_depth=None):
+        super(DepthEstimationLoss, self).__init__()
+        self.alpha = alpha  # Weight for L2 loss
+        self.beta = beta    # Weight for L1 loss
+        self.max_depth = max_depth  # Optional, to clip depth values if needed
+
+    def forward(self, predicted_depth, ground_truth_depth, mask):
+        # Optionally clip depth values to avoid large gradients
+        if self.max_depth is not None:
+            predicted_depth = torch.clamp(predicted_depth, 0, self.max_depth)
+            ground_truth_depth = torch.clamp(ground_truth_depth, 0, self.max_depth)
+
+        denom = torch.sum(mask)
+
+        # L2 loss (Mean Squared Error)
+        l2_loss = torch.sum(mask*(predicted_depth - ground_truth_depth) ** 2)/denom
+        
+        # L1 loss (Mean Absolute Error)
+        l1_loss = torch.sum(mask*torch.abs(predicted_depth - ground_truth_depth))
+
+        # Combined loss with weighted terms
+        loss = self.alpha * l2_loss + self.beta * l1_loss
+        
+        return loss
+
+class ScaleInvariantDepthLoss(nn.Module):
+    def __init__(self):
+        super(ScaleInvariantDepthLoss, self).__init__()
+
+    def forward(self, predicted_depth, ground_truth_depth, mask):
+        # Ensure both depths are non-zero to avoid division by zero
+        epsilon = 1e-6
+        pred_mean = torch.mean(predicted_depth)
+        gt_mean = torch.mean(ground_truth_depth)
+
+        denom = torch.sum(mask)
+
+        # Normalize predicted depth by scaling it to ground truth mean
+        scaled_pred = predicted_depth * (gt_mean / (pred_mean + epsilon))
+
+        # Compute L2 loss between scaled predicted depth and ground truth
+        loss = torch.sum(mask* ((scaled_pred - ground_truth_depth) ** 2))/denom
+
+        return loss
+    
+class NormalLoss(nn.Module):
+    def __init__(self, weight=1.0):
+        super(NormalLoss, self).__init__()
+        self.weight = weight  # Weight to scale the normal loss
+
+    def forward(self, predicted_normals, ground_truth_normals, mask):
+
+        denom = torch.sum(mask)
+        # Compute the cosine similarity between predicted and ground truth normals
+        normal_loss = torch.sum(mask*(1 - torch.cosine_similarity(predicted_normals, ground_truth_normals, dim=1)))/denom
+
+        # Scale the normal loss by the specified weight
+        return self.weight * normal_loss
 
 
 def metric_3D_loss(pc_img_gt, pc_img_pred, mask):
     
     #loss = torch.square(mask*pc_img_gt-mask*pc_img_pred)
     loss = torch.nn.functional.huber_loss(mask*pc_img_pred, mask*pc_img_gt, reduction='sum', delta=1.0)
+    #loss = torch.nn.functional.mse_loss(mask*pc_img_pred, mask*pc_img_gt, size_average=None, reduce=None, reduction='sum') 
+    denom = torch.sum(mask)
+    # Calculate the total variation loss
+    loss = torch.sum(loss)/denom
+    
+    
+    return loss
+
+def weighted_metric_3D_loss(pc_img_gt, pc_img_pred, weights, mask):
+    
+    #loss = torch.square(mask*pc_img_gt-mask*pc_img_pred)
+    loss = torch.nn.functional.huber_loss(weights*mask*pc_img_pred, weights*mask*pc_img_gt, reduction='sum', delta=1.0)
     #loss = torch.nn.functional.mse_loss(mask*pc_img_pred, mask*pc_img_gt, size_average=None, reduce=None, reduction='sum') 
     denom = torch.sum(mask)
     # Calculate the total variation loss
@@ -213,6 +284,43 @@ def torch_build_normal_xyz(xyz, filter_size=3):
     normal = normal / n
 
     return normal
+
+def edge_loss(xyz, xyz_gt, mask, ord=1, dim=0, filter_size=3):
+    '''
+    @param xyz: tensor of shape (batch_size, 3, h, w) containing a staggered point cloud
+    @param filter_size: The size of the filter for computing normals (must be an odd number).
+    '''
+
+    # Build Scharr filters dynamically based on the filter_size
+    scharr_x_weight, scharr_y_weight = build_scharr_filter(filter_size)
+    scharr_x_weight = scharr_x_weight.to(xyz.device)
+    scharr_y_weight = scharr_y_weight.to(xyz.device)
+
+    # Separate the x, y, z components of the input point cloud
+    x = xyz[:, dim:dim+1, ...]  # x component
+    x_gt = xyz_gt[:, dim:dim+1, ...]  # x component
+
+    # Compute the gradients in both x and y directions for each component
+    Sx = F.conv2d(x, weight=scharr_x_weight, padding=filter_size // 2)
+    Sy = F.conv2d(x, weight=scharr_y_weight, padding=filter_size // 2)
+
+    Sx_gt = F.conv2d(x_gt, weight=scharr_x_weight, padding=filter_size // 2)
+    Sy_gt = F.conv2d(x_gt, weight=scharr_y_weight, padding=filter_size // 2)
+
+
+
+    
+    grad = torch.cat((Sx,Sy), dim=1)  
+
+    grad_gt = torch.cat((Sx_gt,Sy_gt), dim=1)  
+
+    loss = torch.linalg.vector_norm((grad-grad_gt), dim=1, ord=ord)
+
+    denom = torch.sum(mask)
+    # Calculate the total variation loss
+    loss = torch.sum(loss)/denom
+
+    return loss
 
 class PairWiseNormalLoss(nn.Module):
     def __init__(self, size_small=3, size_big=9):

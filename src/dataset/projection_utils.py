@@ -202,7 +202,7 @@ def equirect2Fisheye_FOV(img,
                              w_=0.5,
                              angles=[0, 0, 0],
                              interpolation = cv.INTER_CUBIC,
-                             max_FOV = np.deg2rad(210)/2,
+                             max_FOV = np.deg2rad(180)/2,
                              return_deflection = False,
                              return_unit_vec = False,
                              return_CameraTensor = False):

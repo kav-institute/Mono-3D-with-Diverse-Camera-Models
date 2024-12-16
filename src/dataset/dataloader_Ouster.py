@@ -8,9 +8,7 @@ except:
     from utils import build_normal_xyz
 #from dataset.definitions import id_map
 import cv2 as cv
-from scipy.special import sph_harm
 import glob
-import open3d as o3d
 
 try:
     from dataset.projection_utils import equirect2Fisheye_FOV, to_deflection_coordinates
@@ -18,12 +16,11 @@ except:
     from projection_utils import equirect2Fisheye_FOV, to_deflection_coordinates
 
 
-
 def sample_from_cfg(param_list):
     param = np.random.choice(param_list)
     return param
 
-class JPNEquirectangular(Dataset):
+class OusterEquirectangular(Dataset):
     def __init__(self, data_path, config):
         self.data_path = data_path
         self.config = config
@@ -55,11 +52,11 @@ class JPNEquirectangular(Dataset):
         
         frame_path, range_path = self.data_path[idx]
 
-        rgb_img = cv.imread(frame_path)
-
+        rgb_img = cv.imread(frame_path, cv.IMREAD_GRAYSCALE)
+        rgb_img = cv.cvtColor(rgb_img,cv.COLOR_GRAY2RGB) 
         # convert range to meter
         range_img = cv.imread(range_path, cv.IMREAD_UNCHANGED)
-        max_depth = 150.0  # Maximum depth in meters
+        max_depth = 250.0  # Maximum depth in meters
         range_img = (range_img / 65535) * max_depth
         # clip range
         range_img = np.where(range_img>self.config["MAX_RANGE"], 0, range_img)
@@ -89,7 +86,7 @@ class JPNEquirectangular(Dataset):
                                     return_deflection = False,
                                     return_unit_vec = True)
 
-        semantics, cam_tensor = equirect2Fisheye_FOV(range_img, outShape,
+        _, cam_tensor = equirect2Fisheye_FOV(range_img, outShape,
                                     f=f,
                                     w_=d,
                                     angles=[angle1, angle2 ,angle3],
@@ -97,7 +94,7 @@ class JPNEquirectangular(Dataset):
                                     return_deflection = False,
                                     return_unit_vec = False,
                                     return_CameraTensor=True)
-        xyzi_img = unit_vec*range_img[...,None]
+
         # chooce encoding
         if self.config["SENSOR_ENCODING"] == "CoordConv":
              # build coord conv
@@ -133,7 +130,7 @@ class JPNEquirectangular(Dataset):
             endcoding_img = unit_vec
 
         
-        #xyzi_img = unit_vec*range_img[...,None]
+        xyzi_img = unit_vec*range_img[...,None]
 
         normals = build_normal_xyz(xyzi_img)
 
@@ -154,40 +151,32 @@ class JPNEquirectangular(Dataset):
         return color_img, range_img, unit_vec, normals, endcoding
 
 def main():
-    data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/JPN_Dataset/refined/rgb/*.png")]
+
+    data_path_train = [(bin_path, bin_path.replace("NearIR", "Range"))  for bin_path in glob.glob(f"/home/appuser/data/Ouster/0000/NearIR/*.png")]
     config = {}
     config["FOV"] = list(range(20,70,1))
-    config["H"] = [512]#[int(128*i) for i in [2.0, 2.5,3.0, 3.5, 4.0]]
-    config["PITCH"] = list(range(0,360,1))
-    config["ROLL"] = [0]#list(range(-90,90,1))# [0] #list(range(-15,15,1))
-    config["YAW"] = [0] #list(range(-90,90,1))
-    config["DISTORTION"] = [1.0] #np.linspace(0.01, 1.0, 100).tolist() #[0.01, 0.5, 1.0, 1.5]
-    config["ASPECT"] = [1.0]#[1.0, 1.5, 2.0]
+    config["H"] = [256]#[int(128*i) for i in [2.0, 2.5,3.0, 3.5, 4.0]]
+    config["PITCH"] = [0]#list(range(0,360,1))
+    config["ROLL"] = [0]#list(range(-15,15,1))
+    config["YAW"] =[0]
+    config["DISTORTION"] = np.linspace(0.01, 1.0, 100).tolist() #[0.01, 0.5, 1.0, 1.5]
+    config["ASPECT"] = [3.0]#[1.0, 1.5, 2.0]
     config["FLIP"] = [True, False]
     config["MAX_RANGE"] = 50.0
-    config["MIN_RANGE"] = 0.25
+    config["MIN_RANGE"] = 2.5
     config["SENSOR_ENCODING"] = "CameraTensor"
-    depth_dataset_train = JPNEquirectangular(data_path_train, config)
+    depth_dataset_train = OusterEquirectangular(data_path_train, config)
     dataloader_train = DataLoader(depth_dataset_train, batch_size=1, shuffle=True)#, num_workers=1)
 
-    for batch_idx, (color_img, range_img, unit_vec, normals, encoding) in enumerate(dataloader_train):
+    for batch_idx, (color_img, range_img, xyz, normals, encoding) in enumerate(dataloader_train):
         rgb_img = color_img.permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()
         normal_img  = normals.permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()
         range_img  = range_img.permute(0, 2, 3, 1)[0,...,0].cpu().detach().numpy()
         encoding  = encoding.permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()
-        xyz_img = unit_vec*range_img
-        xyz_img = (xyz_img).permute(0, 2, 3, 1)[0,...].cpu().detach().numpy()
         cv.imshow("rgb_img", np.uint8(rgb_img))
         cv.imshow("normal_img", np.uint8(255*0.5*(normal_img+1)))
         cv.imshow("gt", cv.applyColorMap(np.uint8(255*range_img/config["MAX_RANGE"]), cv.COLORMAP_JET))
-        if (cv.waitKey(0) & 0xFF) == ord('q'):
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(xyz_img.reshape(-1,3))
-            pcd.colors = o3d.utility.Vector3dVector(np.float32(rgb_img[...,::-1].reshape(-1,3))/255.0)
-
-            mesh = o3d.geometry.TriangleMesh.create_coordinate_frame()
-            o3d.visualization.draw_geometries([mesh, pcd])
-
+        cv.waitKey(0)
                 
 
 if __name__ == "__main__":

@@ -15,6 +15,26 @@ try:
 except:
     from projection_utils import equirect2Fisheye_FOV, to_deflection_coordinates
 
+# helper to extract LIDAR rays
+def extract_fov(image, theta, h_fov=128):
+    lidar_img = np.zeros_like(image)
+    h = image.shape[0]  # Image height (number of rows)
+
+    # Compute the row corresponding to the top (+theta) and bottom (-theta)
+    top_row = int(h / 2 - (theta / 90) * (h / 2))
+    bottom_row = int(h / 2 - (-theta / 90) * (h / 2))
+
+    # Ensure indices are within bounds
+    top_row = max(0, min(h, top_row))
+    bottom_row = max(0, min(h, bottom_row))
+
+    # Generate 128 evenly spaced rows within this range
+    rows_to_extract = np.linspace(bottom_row, top_row, num=h_fov, dtype=int)
+
+    # Extract the rows
+    lidar_img[rows_to_extract[::-1], :]= image[rows_to_extract[::-1], :]
+
+    return lidar_img
 
 def sample_from_cfg(param_list):
     param = np.random.choice(param_list)
@@ -57,8 +77,10 @@ class CarlaEquirectangular(Dataset):
         # convert range to meter
         range_img = cv.imread(range_path, cv.IMREAD_UNCHANGED)/100.0
         # clip range
+        # TODO: inline: dont clip range, clip depth!
         range_img = np.where(range_img>self.config["MAX_RANGE"], 0, range_img)
         range_img = np.where(range_img<self.config["MIN_RANGE"], 0, range_img)
+
 
         # build w from h and aspect ratio
         w = int(aspect*h) 
@@ -68,35 +90,52 @@ class CarlaEquirectangular(Dataset):
 
         outShape = (h,w)
 
-        rgb_img, deflection = equirect2Fisheye_FOV(rgb_img, outShape,
-                            f=f,
-                            w_=d,
-                            angles=[angle1, angle2 ,angle3],
-                            interpolation = cv.INTER_CUBIC,
-                            return_deflection = True)
-    
-        deflection=np.nan_to_num(deflection,nan=0.0,neginf=0,posinf=0)
-        range_img, unit_vec = equirect2Fisheye_FOV(range_img, outShape,
+        rgb_img, unit_vec = equirect2Fisheye_FOV(rgb_img, outShape,
                                     f=f,
                                     w_=d,
                                     angles=[angle1, angle2 ,angle3],
-                                    interpolation = cv.INTER_NEAREST,
-                                    return_deflection = False,
+                                    interpolation = cv.INTER_CUBIC,
                                     return_unit_vec = True)
+            
+                
 
-        _, cam_tensor = equirect2Fisheye_FOV(range_img, outShape,
+        if self.config["SENSOR_ENCODING"] == "CoordConv":
+             # build coord conv
+            return_deflection = False
+            return_unit_vec = False
+            return_CameraTensor=True
+        elif self.config["SENSOR_ENCODING"] == "CameraTensor":
+            return_deflection = False
+            return_unit_vec = False
+            return_CameraTensor=True
+        elif self.config["SENSOR_ENCODING"] == "UnitVec":
+            return_deflection = False
+            return_unit_vec = True
+            return_CameraTensor=False
+
+        elif self.config["SENSOR_ENCODING"] == "Deflection":
+            return_deflection = True
+            return_unit_vec = False
+            return_CameraTensor=False
+        else:
+            return_deflection = False
+            return_unit_vec = True
+            return_CameraTensor=False
+
+        range_img, encoding = equirect2Fisheye_FOV(range_img, (h,w),
                                     f=f,
                                     w_=d,
                                     angles=[angle1, angle2 ,angle3],
                                     interpolation = cv.INTER_NEAREST,
-                                    return_deflection = False,
-                                    return_unit_vec = False,
-                                    return_CameraTensor=True)
+                                    return_deflection = return_deflection,
+                                    return_unit_vec = return_unit_vec,
+                                    return_CameraTensor=return_CameraTensor)
+        
 
         # chooce encoding
         if self.config["SENSOR_ENCODING"] == "CoordConv":
              # build coord conv
-            endcoding_img = cam_tensor[...,0:2]
+            endcoding_img = encoding[...,0:2]
         elif self.config["SENSOR_ENCODING"] == "CAMConv":
             # cam conv
             # [1]: https://openaccess.thecvf.com/content_CVPR_2019/papers/Facil_CAM-Convs_Camera-Aware_Multi-Scale_Convolutions_for_Single-View_Depth_CVPR_2019_paper.pdf
@@ -116,29 +155,24 @@ class CarlaEquirectangular(Dataset):
         elif self.config["SENSOR_ENCODING"] == "CameraTensor":
             # OmniDet (non linear cam conv) 
             # [2]: https://arxiv.org/abs/2102.07448
-            endcoding_img = cam_tensor
+            endcoding_img = encoding
         elif self.config["SENSOR_ENCODING"] == "UnitVec":
-            endcoding_img = unit_vec
-        elif self.config["SENSOR_ENCODING"] == "SHE":
-            raise ValueError
+            endcoding_img = encoding
 
         elif self.config["SENSOR_ENCODING"] == "Deflection":
-            endcoding_img = deflection[...,None]
+            encoding=np.nan_to_num(encoding,nan=0.0,neginf=0,posinf=0)
+            endcoding_img = encoding[...,None]
         else:
-            endcoding_img = unit_vec
-
-        
-        xyzi_img = unit_vec*range_img[...,None]
-
-        normals = build_normal_xyz(xyzi_img)
+            endcoding_img = encoding
 
         if not FLIP:
             rgb_img = rgb_img[:,::-1,:]
             unit_vec = unit_vec[:,::-1,:]
-            normals = normals[:,::-1,:]
-            #semantics = semantics[:,::-1]
             range_img = range_img[:,::-1]
             endcoding_img = endcoding_img[:,::-1,:]
+
+        xyzi_img = unit_vec*range_img[...,None]
+        normals = build_normal_xyz(xyzi_img)
 
         range_img =  torch.as_tensor(range_img[...,None].transpose(2, 0, 1).astype("float32"))
         color_img  =  torch.as_tensor(rgb_img.transpose(2, 0, 1).astype("float32"))
@@ -146,12 +180,12 @@ class CarlaEquirectangular(Dataset):
         endcoding =  torch.as_tensor(endcoding_img.transpose(2, 0, 1).astype("float32"))
         normals =  torch.as_tensor(normals.transpose(2, 0, 1).astype("float32"))
 
-        #semantics =  torch.as_tensor(semantics[...,None].transpose(2, 0, 1).astype("long"))
+
 
         return color_img, range_img, unit_vec, normals, endcoding
 
 def main():
-    data_path_train = [(bin_path, bin_path.replace("rgb", "range"), bin_path.replace("rgb", "labels"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/val/rgb/*.png")]
+    data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/val/rgb/*.png")]
     config = {}
     config["FOV"] = list(range(20,70,1))
     config["H"] = [512]#[int(128*i) for i in [2.0, 2.5,3.0, 3.5, 4.0]]

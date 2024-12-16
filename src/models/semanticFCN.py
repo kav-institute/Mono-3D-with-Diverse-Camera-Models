@@ -52,13 +52,13 @@ class RangeNetWithFPN(nn.Module):#
         attention (bool): Option to use a attention mechanism in the FPN (see: https://arxiv.org/pdf/1706.03762.pdf)
         
     """
-    def __init__(self, backbone='resnet18', meta_channel_dim=3, interpolation_mode = 'nearest', num_classes = 2, attention=False, pretrained=False):
+    def __init__(self, backbone='resnet18', meta_channel_dim=3, interpolation_mode = 'nearest',  attention=True, pretrained=True, learn_skymask=False):
         super(RangeNetWithFPN, self).__init__()
 
         self.backbone_name = backbone
         self.interpolation_mode = interpolation_mode
-        self.num_classes = num_classes
         self.attention = attention
+        self.learn_skymask = learn_skymask
         # Load pre-trained ResNet model
         if backbone == 'resnet18':
             self.backbone = models.resnet18(pretrained=pretrained)
@@ -70,6 +70,10 @@ class RangeNetWithFPN(nn.Module):#
             base_channels = [base_channel, base_channel // 2, base_channel // 4, base_channel // 8, base_channel // 16]
         elif backbone == 'resnet50':
             self.backbone = models.resnet50(pretrained=pretrained)
+            base_channel = 2048  # Number of channels in the last layer of ResNet50
+            base_channels = [base_channel, base_channel // 2, base_channel // 4, base_channel // 8, base_channel // 16]
+        elif backbone == 'resnet101':
+            self.backbone = models.resnet101(pretrained=pretrained)
             base_channel = 2048  # Number of channels in the last layer of ResNet50
             base_channels = [base_channel, base_channel // 2, base_channel // 4, base_channel // 8, base_channel // 16]
         elif backbone == 'regnet_y_400mf':
@@ -84,18 +88,18 @@ class RangeNetWithFPN(nn.Module):#
         elif backbone == 'regnet_y_3_2gf':
             self.backbone = models.regnet_y_3_2gf(pretrained=pretrained)
             base_channels = [1512, 576, 216, 72, 32]
-        elif backbone == 'shufflenet_v2_x0_5':
-            self.backbone = models.shufflenet_v2_x0_5(pretrained=pretrained)
-            base_channels = [1024, 192, 96, 48, 24]
-        elif backbone == 'shufflenet_v2_x1_0':
-            self.backbone = models.shufflenet_v2_x1_0(pretrained=pretrained)
-            base_channels = [1024, 464, 232, 116, 24]
-        elif backbone == 'shufflenet_v2_x1_5':
-            self.backbone = models.shufflenet_v2_x1_5(pretrained=pretrained)
-            base_channels = [1024, 704, 352, 176, 24]
-        elif backbone == 'shufflenet_v2_x2_0':
-            self.backbone = models.shufflenet_v2_x2_0(pretrained=pretrained)
-            base_channels = [2048, 976, 488, 244, 112]
+        # elif backbone == 'shufflenet_v2_x0_5':
+        #     self.backbone = models.shufflenet_v2_x0_5(pretrained=pretrained)
+        #     base_channels = [1024, 192, 96, 48, 24]
+        # elif backbone == 'shufflenet_v2_x1_0':
+        #     self.backbone = models.shufflenet_v2_x1_0(pretrained=pretrained)
+        #     base_channels = [1024, 464, 232, 116, 24]
+        # elif backbone == 'shufflenet_v2_x1_5':
+        #     self.backbone = models.shufflenet_v2_x1_5(pretrained=pretrained)
+        #     base_channels = [1024, 704, 352, 176, 24]
+        # elif backbone == 'shufflenet_v2_x2_0':
+        #     self.backbone = models.shufflenet_v2_x2_0(pretrained=pretrained)
+        #     base_channels = [2048, 976, 488, 244, 112]
         else:
             raise ValueError("Invalid ResNet type. Supported types: 'resnet18', 'resnet34', 'resnet50', 'regnet_y_400mf','regnet_y_800mf', 'regnet_y_1_6gf', 'regnet_y_3_2gf', 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0.")
         
@@ -104,7 +108,7 @@ class RangeNetWithFPN(nn.Module):#
 
         is_shuffle = False
         # extract features from resnet family
-        if backbone in ['resnet18', 'resnet34', 'resnet50']:
+        if backbone in ['resnet18', 'resnet34', 'resnet50', 'resnet101']:
             self.backbone.conv1 = nn.Conv2d(3 + meta_channel_dim, 64, kernel_size=3, stride=1, padding=1, bias=False)
 
             # Extract feature maps from different layers of ResNet
@@ -124,16 +128,16 @@ class RangeNetWithFPN(nn.Module):#
             self.layer3 = self.backbone.trunk_output[2]
             self.layer4 = self.backbone.trunk_output[3]
 
-        elif backbone in ["shufflenet_v2_x0_5", "shufflenet_v2_x1_0", "shufflenet_v2_x1_5", "shufflenet_v2_x2_0"]:
-            self.backbone.conv1[0] = nn.Conv2d(3 + meta_channel_dim, self.backbone.conv1[0].out_channels, kernel_size=3, stride=1, padding=1, bias=False)
-            #help_conv = nn.Conv2d(2 + meta_channel_dim, self.backbone.conv1[0].out_channels, kernel_size=3, stride=2, padding=1, bias=False)
-            # Extract feature maps using indices or named stages from ShuffleNet
-            self.stem = self.backbone.conv1
-            self.layer1 = self.backbone.stage2
-            self.layer2 = self.backbone.stage3
-            self.layer3 = self.backbone.stage4
-            self.layer4 = self.backbone.conv5
-            is_shuffle = True
+        # elif backbone in ["shufflenet_v2_x0_5", "shufflenet_v2_x1_0", "shufflenet_v2_x1_5", "shufflenet_v2_x2_0"]:
+        #     self.backbone.conv1[0] = nn.Conv2d(3 + meta_channel_dim, self.backbone.conv1[0].out_channels, kernel_size=3, stride=1, padding=1, bias=False)
+        #     #help_conv = nn.Conv2d(2 + meta_channel_dim, self.backbone.conv1[0].out_channels, kernel_size=3, stride=2, padding=1, bias=False)
+        #     # Extract feature maps using indices or named stages from ShuffleNet
+        #     self.stem = self.backbone.conv1
+        #     self.layer1 = self.backbone.stage2
+        #     self.layer2 = self.backbone.stage3
+        #     self.layer3 = self.backbone.stage4
+        #     self.layer4 = self.backbone.conv5
+        #     is_shuffle = True
 
         # Attention blocks
         self.attention4 = AttentionModule(base_channels[1], base_channels[1])
@@ -150,32 +154,42 @@ class RangeNetWithFPN(nn.Module):#
 
         # upsamle layers
         if is_shuffle:
-            self.upsample_layer_x4 = nn.ConvTranspose2d(in_channels=base_channels[1], out_channels=base_channels[1], kernel_size=4, stride=4, padding=0)
+            self.upsample_layer_x4 = nn.ConvTranspose2d(in_channels=base_channels[1], out_channels=base_channels[1]//4, kernel_size=4, stride=4, padding=0)
         else:
-            self.upsample_layer_x4 = nn.ConvTranspose2d(in_channels=base_channels[1], out_channels=base_channels[1], kernel_size=8, stride=8, padding=0)
-        self.upsample_layer_x3 = nn.ConvTranspose2d(in_channels=base_channels[2], out_channels=base_channels[2], kernel_size=4, stride=4, padding=0)
-        self.upsample_layer_x2 = nn.ConvTranspose2d(in_channels=base_channels[3], out_channels=base_channels[3], kernel_size=2, stride=2, padding=0)
+            self.upsample_layer_x4 = nn.ConvTranspose2d(in_channels=base_channels[1], out_channels=base_channels[1]//8, kernel_size=8, stride=8, padding=0)
+        self.upsample_layer_x3 = nn.ConvTranspose2d(in_channels=base_channels[2], out_channels=base_channels[2]//4, kernel_size=4, stride=4, padding=0)
+        self.upsample_layer_x2 = nn.ConvTranspose2d(in_channels=base_channels[3], out_channels=base_channels[3]//2, kernel_size=2, stride=2, padding=0)
         
-
-        # self.decoder_semantic = nn.Sequential(
-        #     nn.Conv2d(base_channels[1] + base_channels[2] + base_channels[3] + base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(base_channels[4]),
-        #     nn.ReLU(inplace=True),
-        #     nn.Conv2d(base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
-        #     nn.BatchNorm2d(base_channels[4]),
-        #     nn.ReLU(inplace=True),
-        #     nn.ConvTranspose2d(base_channels[4], self.num_classes, kernel_size=4, stride=2, padding=1),
-        # )
-
-        self.decoder_range = nn.Sequential(
-            nn.Conv2d(base_channels[1] + base_channels[2] + base_channels[3] + base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(base_channels[4]),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(base_channels[4]),
-            nn.ReLU(inplace=True),
-            nn.ConvTranspose2d(base_channels[4], 1, kernel_size=4, stride=2, padding=1),
+        self.merge_layer = nn.Sequential(nn.Conv2d(meta_channel_dim + base_channels[1]//8 + base_channels[2]//4 + base_channels[3]//2 + base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
+                                         nn.BatchNorm2d(base_channels[4]),
+                                         nn.ReLU(inplace=True),
+                                         nn.Conv2d(base_channels[4], base_channels[4], kernel_size=3, stride=1, padding=1),
+                                         nn.BatchNorm2d(base_channels[4]),
+                                         nn.ReLU(inplace=True),
+                                         nn.Conv2d(base_channels[4], base_channels[4], kernel_size=1, stride=1, padding=0)
         )
+
+        self.decoder_mu = nn.Sequential(
+            nn.ConvTranspose2d(meta_channel_dim + base_channels[4], base_channels[4]//2, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(base_channels[4]//2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(base_channels[4]//2, base_channels[4]//2, kernel_size=3, stride=1, padding=1),
+            nn.BatchNorm2d(base_channels[4]//2),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(base_channels[4]//2, 3, kernel_size=3, stride=1, padding=1),
+        )
+        if self.learn_skymask:
+            self.decoder_skymask = nn.Sequential(
+                nn.ConvTranspose2d(meta_channel_dim + base_channels[4], base_channels[4]//2, kernel_size=4, stride=2, padding=1),
+                nn.BatchNorm2d(base_channels[4]//2),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(base_channels[4]//2, base_channels[4]//2, kernel_size=3, stride=1, padding=1),
+                nn.BatchNorm2d(base_channels[4]//2),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(base_channels[4]//2, 1, kernel_size=3, stride=1, padding=1),
+                nn.Sigmoid()
+            )
+
 
     def _make_fpn_block(self, in_channels, out_channels):
         """
@@ -248,16 +262,27 @@ class RangeNetWithFPN(nn.Module):#
 
         
 
-        x4 = self.upsample_layer_x4(x4)
-        x3 = self.upsample_layer_x3(x3)
-        x2 = self.upsample_layer_x2(x2)
+        x4u = self.upsample_layer_x4(x4)
+        x3u = self.upsample_layer_x3(x3)
+        x2u = self.upsample_layer_x2(x2)
 
         # Concatenate feature maps
-        x = torch.cat([x1, x2, x3, x4], dim=1)
-
+        if self.meta_channel_dim > 0:
+            x = torch.cat([meta_channel1, x1, x2u, x3u, x4u], dim=1)
+            # Anti Aliasing
+            x_merged = self.merge_layer(x)
+            x_merged = torch.cat([meta_channel1, x_merged], dim=1)
+        else:
+            x = torch.cat([x1, x2u, x3u, x4u], dim=1)
+            x_merged = self.merge_layer(x)
+        
+        # 
 
         # Decoder
-        x_range = self.decoder_range(x)
-        #x_semantics = self.decoder_semantic(x)
-        return x_range#, x_semantics
+        x_mu = self.decoder_mu(x_merged)
+        if self.learn_skymask:
+            x_skymask = self.decoder_skymask(x_merged)
+            return x_mu, x_skymask
+        else:
+            return x_mu, None
     

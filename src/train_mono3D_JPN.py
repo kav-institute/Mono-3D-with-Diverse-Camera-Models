@@ -19,6 +19,7 @@ from dataset.definitions import meta_channel_dict
 from models.trainer import Trainer
 from models.tester import Tester
 import json
+import random
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -40,7 +41,7 @@ def main(args):
     config["BACKBONE"] = args.model_type
     config["INTERPOLATION"] = 'nearest'
     config["USE_ATTENTION"] = True
-    config["SAVE_PATH"] = '/home/appuser/data/train_depth_CARLA/{}_{}/model_final.pth'.format(args.model_type, args.encoding)
+    config["SAVE_PATH"] = '/home/appuser/data/train_depth_JPN/{}_{}/model_final.pth'.format(args.model_type, args.encoding)
 
     config_test = copy.deepcopy(config)
     config_test["FOV"] = [35]
@@ -52,18 +53,26 @@ def main(args):
     config_test["MIN_RANGE"] = 0.1
     config_test["SENSOR_ENCODING"] = args.encoding #"UnitVec"
     # DataLoader
-    data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/train/rgb/*.png")]
-    data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/val/rgb/*.png")]
+    data_path = list(glob.glob(f"/home/appuser/data/JPN_Dataset/refined/rgb/*.png"))
+    random.shuffle(data_path)
     
-    depth_dataset_train = CarlaEquirectangular(data_path_train, config=config)
+    data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/train/rgb/*.png")]
+
+    depth_dataset_train_CARLA = CarlaEquirectangular(data_path_train, config=config)
+
+    data_path_train = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in data_path[0:int(0.7*len(data_path))]]
+    data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in data_path[int(0.7*len(data_path)):]]
+    
+    depth_dataset_train_JPN = JPNEquirectangular(data_path_train, config=config)
+    depth_dataset_train  = torch.utils.data.ConcatDataset([depth_dataset_train_JPN])
     dataloader_train = DataLoader(depth_dataset_train, batch_size=args.batch_size, shuffle=True, num_workers=args.num_workers)
     
-    depth_dataset_test = CarlaEquirectangular(data_path_test, config=config_test)
+    depth_dataset_test = JPNEquirectangular(data_path_test, config=config_test)
     dataloader_test = DataLoader(depth_dataset_test, batch_size=1, shuffle=False, num_workers=args.num_workers)
 
     # Depth Estimation Network
-    model = RangeNetWithFPN(backbone=args.model_type, meta_channel_dim=meta_channel_dict[config["SENSOR_ENCODING"]], attention=config["USE_ATTENTION"], interpolation_mode=config["INTERPOLATION"])
-
+    model = RangeNetWithFPN(backbone=args.model_type, meta_channel_dim=meta_channel_dict[config["SENSOR_ENCODING"]], attention=config["USE_ATTENTION"], interpolation_mode=config["INTERPOLATION"], learn_skymask=True)
+    model.load_state_dict(torch.load("/home/appuser/data/train_depth_CARLA/{}_{}/model_final.pth".format(args.model_type, args.encoding)), strict=False)
 
     num_params = count_parameters(model)
     print("num_params", count_parameters(model))
@@ -85,24 +94,24 @@ def main(args):
     num_epochs = args.num_epochs
 
 
-    trainer = Trainer(model, optimizer, save_path, scheduler = scheduler, visualize = args.visualization, max_range_vis=config["MAX_RANGE"])
+    trainer = Trainer(model, optimizer, save_path, scheduler = scheduler, visualize = True, max_range_vis=config["MAX_RANGE"])
     trainer(dataloader_train, dataloader_test, num_epochs)
 
-    # run final test
-    tester = Tester(model, save_path=os.path.join(save_path, "model_final.pth"), config=config, load=False)
-    data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/Carla/test/rgb/*.png")]
-    tester(CarlaEquirectangular, data_path_test)
+    # # run final test
+    # tester = Tester(model, save_path=os.path.join(save_path, "model_final.pth"), config=config, load=False)
+    # data_path_test = [(bin_path, bin_path.replace("rgb", "range"))  for bin_path in glob.glob(f"/home/appuser/data/JPN/test/rgb/*.png")]
+    # tester(CarlaEquirectangular, data_path_test)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = 'Train Script for Monocular 3D')
     parser.add_argument('--model_type', type=str, default='resnet34',
                         help='Type of the model to be used (default: resnet50)')
-    parser.add_argument('--encoding', type=str, default="CameraTensor",
+    parser.add_argument('--encoding', type=str, default="UnitVec",
                         help='Type of the model to be used (default: CameraTensor)')
     parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='Learning rate for the model (default: 0.001)')
-    parser.add_argument('--num_epochs', type=int, default=2,
+    parser.add_argument('--num_epochs', type=int, default=100,
                         help='Number of epochs for training (default: 50)')
     parser.add_argument('--batch_size', type=int, default=4,
                         help='Batch size for training (default: 1)')

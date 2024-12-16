@@ -203,7 +203,7 @@ class MatterportEquirectangular(Dataset):
     
 
 def main():
-    data_path_train = [(bin_path, bin_path.replace("_rgb.png", "_depth.dpt"))  for bin_path in glob.glob(f"/home/appuser/data/Matterport3D/data/*/*_rgb.png")]
+    data_path_train = [(bin_path, bin_path.replace("_rgb.png", "_depth.dpt"))  for bin_path in glob.glob(f"/home/appuser/data/Matterport/data/*/*_rgb.png")]
     config = {}
     config["FOV"] = list(range(20,70,1))
     config["H"] = [256]#[int(128*i) for i in [2.0, 2.5,3.0, 3.5, 4.0]]
