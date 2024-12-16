@@ -93,6 +93,35 @@ For CARLA run the training by:
 ```bash
 python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor --learning_rate 0.001 --num_epochs 1000 --batch_size 8 --num_workers 16 --visualization
 ```
+During training a folder with the following structure is created:
+```
+dataset
+└───train_depth_CARLA
+│   └───{backbone}_{encoding}
+│   |   │   config.json # configuration file
+│   |   │   events.out.tfevents.* # tensorflow events
+│   |   │   model_final.pth # network weights
+```
+
+## Testing
+
+For CARLA run the test of a trained configuration by:
+```bash
+python src/train_mono3D_CARLA.py --save_path .../config.json
+```
+After testing the folder of the configuration also containes the folowwing results:
+```
+dataset
+└───train_depth_CARLA
+│   └───{backbone}_{encoding}
+│   |   │   results.json # machine readable result file
+│   |   │   l1.png # plot over the delta 1 error
+│   |   │   RMSE.png # plot over the root mean sqaured error
+```
+
+> [!NOTE]
+> The camera configurations used for testing can be changed in the test_mono3D.py script!
+
 ## License
 Copyright © Technische Hochschule Aschaffenburg / University of Applied Sciences Aschaffenburg 2024. Patent Pending.
 All rights reserved.
