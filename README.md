@@ -107,7 +107,7 @@ dataset
 
 For CARLA run the test of a trained configuration by:
 ```bash
-python src/train_mono3D_CARLA.py --save_path .../config.json
+python src/test_mono3D.py --save_path .../config.json
 ```
 After testing the folder of the configuration also containes the folowwing results:
 ```
