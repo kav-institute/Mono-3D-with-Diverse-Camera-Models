@@ -50,11 +50,6 @@ You can download the [Matterport 360](https://researchdata.bath.ac.uk/1126/) [6]
 The Fukuhoka Dataset is a high fidelity dataset for place categorization. It containes various static scenes from traffic related environemnts captured by a FARO 3D scanner and a equirectangular camera.
 You can download the [Fukuhoka Dataset](http://robotics.ait.kyushu-u.ac.jp/kyushu_datasets/outdoor_dense.html) [8].
 
-### TH AB 360
-TBD
-
-
-
 ## Development environment:
 
 ### VS-Code:
