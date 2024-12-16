@@ -12,7 +12,9 @@ dataset
 │   │   └───rgb
 │   |   │   *.png
 ```
-The sample in train are used for training, the samples in val are used for validation during the training and the samples in test are used for testing in test_mono3D.py.
+The sample in train are used for training, the samples in val are used for validation during the training in train_mono3d_CARLA.py and the samples in test are used for testing in test_mono3D.py.
+> [!NOTE]
+> We wrote a designated dataloader in src/dataset/dataloader_CARLA.py
 ## Fukuhoka Dataset for Place Categorization
 For the Fukuhoka dataset we need to to some preprocessing first. Ensure the following datastructure:
 ```
@@ -40,6 +42,9 @@ dataset
 > We did not define a train/test/val split for this dataset, since it is not used in our paper!
 > Feel free to shuffle the samples on your own demands!
 > We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
+
+> [!NOTE]
+> We wrote a designated dataloader in src/dataset/dataloader_CARLA.py
 ## Matterport 360
 ```
 dataset
@@ -55,3 +60,6 @@ dataset
 > We did not define a train/test/val split for this dataset, since it is not used in our paper!
 > Feel free to shuffle the sequences on your own demands!
 > We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
+
+> [!NOTE]
+> We wrote a designated dataloader in src/dataset/dataloader_CARLA.py
