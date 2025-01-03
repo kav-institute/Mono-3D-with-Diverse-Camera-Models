@@ -1,5 +1,6 @@
 # Monocular 3D with Diverse Camera Models
 This code is for non-commercial use; please see the [license file](LICENSE) for terms.
+This code is a research preview it comes with absolutely no warranty!
 
 ## Introduction
 Mono 3D from a single image is challenging due to ambiguities in scale. Camera intrinsic parameters are critically important for the
