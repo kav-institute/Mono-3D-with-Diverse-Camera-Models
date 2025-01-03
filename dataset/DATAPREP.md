@@ -44,7 +44,7 @@ dataset
 > We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
 
 > [!NOTE]
-> We wrote a designated dataloader in src/dataset/dataloader_CARLA.py
+> We wrote a designated dataloader in src/dataset/dataloader_JPN.py
 ## Matterport 360
 ```
 dataset
@@ -62,4 +62,4 @@ dataset
 > We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
 
 > [!NOTE]
-> We wrote a designated dataloader in src/dataset/dataloader_CARLA.py
+> We wrote a designated dataloader in src/dataset/dataloader_Matterport.py
