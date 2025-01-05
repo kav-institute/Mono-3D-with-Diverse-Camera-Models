@@ -48,7 +48,7 @@ The Matterport Dataset provieds equirectangular images with range measured captu
 You can download the [Matterport 360](https://researchdata.bath.ac.uk/1126/) [6] dataset.
 
 ### Fukuhoka Dataset for Place Categorization
-The Fukuhoka Dataset is a high fidelity dataset for place categorization. It containes various static scenes from traffic related environemnts captured by a FARO 3D scanner and a equirectangular camera.
+The Fukuhoka Dataset is a high fidelity dataset for place categorization. It containes various static scenes from traffic related environemnts captured by a FARO 3D scanner and an equirectangular camera.
 You can download the [Fukuhoka Dataset](http://robotics.ait.kyushu-u.ac.jp/kyushu_datasets/outdoor_dense.html) [8].
 
 ### Data Preperation
