@@ -146,4 +146,11 @@ Please see the [license file](LICENSE) for terms.
 
 [8] Martinez Mozos O, Nakashima K, Jung H, Iwashita Y, Kurazume R. "Fukuoka datasets for place categorization" 2019 The International Journal of Robotics Research. pages 38(5):507-517. doi:10.1177/0278364919835603
 
+## Contributors:
+
+<a href="https://github.com/kav-institute/Mono-3D-with-Diverse-Camera-Models/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=kav-institute/Mono-3D-with-Diverse-Camera-Models" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
