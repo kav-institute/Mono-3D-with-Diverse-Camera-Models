@@ -55,6 +55,15 @@ You can download the [Fukuhoka Dataset](http://robotics.ait.kyushu-u.ac.jp/kyush
 See [DATAPREP.md](dataset/DATAPREP.md) to learn about the data preperation and the dataloaders.
 
 ## Development environment:
+### Reference System
+```bash
+OS: Ubuntu 22.04.4 LTS x86_64 
+Host: B550 AORUS ELITE 
+Kernel: 6.8.0-49-generic 
+CPU: AMD Ryzen 9 3900X (24) @ 3.800G 
+GPU: NVIDIA GeForce RTX 3090 
+Memory: 13806MiB / 32031MiB                      
+```
 
 ### VS-Code:
 The project is designed to be developed within vs-code IDE using remote container development.
