@@ -62,7 +62,7 @@ Host: B550 AORUS ELITE
 Kernel: 6.8.0-49-generic 
 CPU: AMD Ryzen 9 3900X (24) @ 3.800G 
 GPU: NVIDIA GeForce RTX 3090 
-Memory: 13806MiB / 32031MiB                      
+Memory: 32031MiB                      
 ```
 
 ### VS-Code:
