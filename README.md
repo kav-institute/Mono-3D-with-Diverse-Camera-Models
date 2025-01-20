@@ -10,9 +10,9 @@ problem is ill-posed. In this work we aim to compare various approaches for came
 <img src="/Images/IntrinsicVForward.png" width="400">
 
 ## Approach
-The training data of many previous approaches contains limited images and types of cameras,
+The training data of many previous approaches contains limited types of cameras,
 which challenges data diversity and network capacity. 
-We propose a data augmentation pipeline from high-resolution equirectangular panoramas to generate diverse types of cameras during and mounting angles training and testing.
+We propose a data augmentation pipeline from high-resolution equirectangular panoramas to generate diverse types of cameras and mounting angles during training and testing.
 We use the [OmniCV-Lib](https://github.com/kaustubh-sadekar/OmniCV-Lib) (with some modifications) for our augmentation.
 
 <img src="/Images/augmentation_ladybug.png" width="400">
@@ -95,7 +95,7 @@ You can modify the training parameter using the argparse.
 
 ```
 Supported backbone types: 'resnet18', 'resnet34', 'resnet50', 'regnet_y_400mf','regnet_y_800mf', 'regnet_y_1_6gf', 'regnet_y_3_2gf', 'shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0'.
-Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'UnitVec','Deflection'[1], 'SHE'[5,7], and 'None'.
+Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'UnitVec','Deflection'[1], and 'None'.
 ```
 
 
