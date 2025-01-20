@@ -36,12 +36,12 @@ config["FLIP"] = [True, False] # horizontal flip
 > We only support batch size of one for heterogenous image hights and aspect ratios
 
 ## Datasets
-### CARLA 9.14
+### CARLA 9.14 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.14697783.svg)](https://doi.org/10.5281/zenodo.14697783)
 The CARLA dataset is a synthetic dataset containing equirectangular images, segmentation masks (semantic & instance), and range measures from simulated traffic scenes.
 You can generate a carla dataset by using the following repo:
 https://github.com/kav-hareichert/CARLA_MV_RIG
 
-Or you can use our pre-generated [CARLA Panorama](https://drive.google.com/drive/folders/1WFCy2XeJugk82qbQTRmHuzYb6c8x4TqY?usp=sharing) dataset.
+Or you can use our pre-generated [CARLA Panorama](https://zenodo.org/records/14697783) dataset.
 
 ### Matterport 360
 The Matterport Dataset provieds equirectangular images with range measured captured in indoor scenes by a Matterport 3D sensor.
