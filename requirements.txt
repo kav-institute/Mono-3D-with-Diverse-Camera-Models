@@ -2,6 +2,7 @@ tensorboard
 open3d==0.18.0
 termcolor
 tqdm
+numpy==1.26.4
 
 
 
