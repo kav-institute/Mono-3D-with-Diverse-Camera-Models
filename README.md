@@ -65,9 +65,6 @@ GPU: NVIDIA GeForce RTX 3090
 Memory: 32031MiB                      
 ```
 
-### VS-Code:
-The project is designed to be developed within vs-code IDE using remote container development.
-
 ### Setup Docker Container
 In docker-compse.yaml all parameters are defined.
 ```bash
@@ -89,6 +86,14 @@ docker compose down
 > [!CAUTION]
 > xhost + is not a safe operation!
 
+### VS-Code:
+The project is designed to be developed within vs-code IDE using remote container development.
+Make sure you use the following extentions in VS code:
+```
+ms-vscode-remote.remote-containers
+ms-azuretools.vscode-docker
+```
+
 
 ## Training
 You can modify the training parameter using the argparse.
@@ -101,7 +106,7 @@ Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'Un
 
 For CARLA run the training by:
 ```bash
-python src/train_mono3D_CARLA.py --model_type resnet34 --encoding UnitVec --learning_rate 0.001 --num_epochs 50 --batch_size 8 --num_workers 16 --visualization
+appuser@c5852109fb84:~/repos$ python3 train_mono3D_CARLA.py --model_type resnet34 --encoding UnitVec --learning_rate 0.001 --num_epochs 50 --batch_size 8 --num_workers 16 --visualization
 ```
 During training a folder with the following structure is created:
 ```
@@ -117,7 +122,7 @@ dataset
 
 For CARLA run the test of a trained configuration by:
 ```bash
-python src/test_mono3D.py --save_path .../config.json
+appuser@c5852109fb84:~/repos$ python3 src/test_mono3D.py --save_path .../config.json
 ```
 After testing the folder of the configuration also containes the folowwing results:
 ```
