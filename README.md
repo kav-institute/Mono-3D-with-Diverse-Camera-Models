@@ -78,10 +78,10 @@ sudo xhost +
 sh setup.sh
 
 # Build the image from scratch using Dockerfile, can be skipped if the image already exists or is loaded from docker registry
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Start the container
-docker-compose up -d
+docker compose up -d
 
 # Stop the container
 docker compose down
@@ -101,7 +101,7 @@ Supported sensor encodings: 'CoordConv'[2], 'CAMConv'[3], 'CameraTensor'[4], 'Un
 
 For CARLA run the training by:
 ```bash
-python src/train_mono3D_CARLA.py --model_type resnet34 --encoding CameraTensor --learning_rate 0.001 --num_epochs 1000 --batch_size 8 --num_workers 16 --visualization
+python src/train_mono3D_CARLA.py --model_type resnet34 --encoding UnitVec --learning_rate 0.001 --num_epochs 50 --batch_size 8 --num_workers 16 --visualization
 ```
 During training a folder with the following structure is created:
 ```
