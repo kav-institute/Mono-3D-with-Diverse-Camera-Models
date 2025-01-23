@@ -41,7 +41,6 @@ dataset
 > [!NOTE]
 > We did not define a train/test/val split for this dataset, since it is not used in our paper!
 > Feel free to shuffle the samples on your own demands!
-> We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
 
 > [!NOTE]
 > We wrote a designated dataloader in src/dataset/dataloader_JPN.py
@@ -59,7 +58,6 @@ dataset
 > [!NOTE]
 > We did not define a train/test/val split for this dataset, since it is not used in our paper!
 > Feel free to shuffle the sequences on your own demands!
-> We also dont provide a dsignated script for training. You can take inspiration from the train_mono3D_CARLA.py to write your own.
 
 > [!NOTE]
 > We wrote a designated dataloader in src/dataset/dataloader_Matterport.py
