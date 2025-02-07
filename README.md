@@ -58,11 +58,8 @@ See [DATAPREP.md](dataset/DATAPREP.md) to learn about the data preperation and t
 ### Reference System
 ```bash
 OS: Ubuntu 22.04.4 LTS x86_64 
-Host: B550 AORUS ELITE 
-Kernel: 6.8.0-49-generic 
-CPU: AMD Ryzen 9 3900X (24) @ 3.800G 
-GPU: NVIDIA GeForce RTX 3090 
-Memory: 32031MiB                      
+CPU: AMD Ryzen 9 3900X
+GPU: NVIDIA GeForce RTX 3090                   
 ```
 
 ### Setup Docker Container
